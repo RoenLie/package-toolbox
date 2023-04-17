@@ -17,7 +17,7 @@ export const incrementPackageVersion = async () => {
 
 		parsedPackage['version'] = newVersion;
 
-		const stringified = JSON.stringify(parsedPackage, null, 3);
+		const stringified = JSON.stringify(parsedPackage, null, '\t');
 		writeFileSync('./package.json', stringified);
 	}
 	catch (error) { /*  */ }
