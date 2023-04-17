@@ -56,45 +56,5 @@
 				}
 			]
 		},
-		{
-			"splitTerminals": [
-				{
-					"name": "core",
-					"commands": [
-						"cd packages/mimic-core"
-					]
-				}
-			]
-		},
-		{
-			"splitTerminals": [
-				{
-					"name": "lit",
-					"commands": [
-						"cd packages/mimic-lit"
-					]
-				}
-			]
-		},
-		{
-			"splitTerminals": [
-				{
-					"name": "nodejs",
-					"commands": [
-						"cd packages/mimic-nodejs"
-					]
-				}
-			]
-		},
-		{
-			"splitTerminals": [
-				{
-					"name": "router",
-					"commands": [
-						"cd packages/mimic-router"
-					]
-				}
-			]
-		}
 	]
 }
