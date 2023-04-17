@@ -11,6 +11,7 @@ export default defineToolbox(async () => {
 				{ path: './src/filesystem/index.ts', filters: [ exclude ] },
 				{ path: './src/increment-package/index.ts', filters: [ exclude ] },
 				{ path: './src/index-builder/index.ts', filters: [ exclude ] },
+				{ path: './src/toolbox/index.ts', filters: [ exclude ] },
 				{ path: './src/utils/index.ts', filters: [ exclude ] },
 				{ path: './src/vite/index.ts', filters: [ exclude ] },
 			],
