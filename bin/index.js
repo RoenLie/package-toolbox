@@ -14,5 +14,12 @@ yargs(hideBin(process.argv))
 	.command('build-indexes', 'build indexes at configured locations.', () => { /*  */ }, async () => {
 		cmds.indexBuilder();
 	})
+	.command('copy', 'Copies files base on the profile key supplied.', () => { /*  */ }, async (args) => {
+		const { profile } = args;
+		if (typeof profile !== 'string')
+			throw ('Invalid profile arguments: ' + JSON.stringify(args));
+
+		cmds.copy(profile);
+	})
 	.demandCommand(1)
 	.parse();

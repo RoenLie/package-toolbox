@@ -1,3 +1,4 @@
+import { copy, CopyOptions } from '../filesystem/copy-files.js';
 import { incrementPackageVersion } from '../increment-package/increment-package-version.js';
 import { indexBuilder as buildIndex } from '../index-builder/index-builder.js';
 import { buildConfigFile, loadConfigFromBundledFile } from './config.js';
@@ -14,6 +15,7 @@ export type ToolboxConfig = {
 		}[];
 		exclusionJSDocTag?: string;
 	};
+	copy?: Record<string, CopyOptions>;
 }
 
 
@@ -46,6 +48,10 @@ export const toolbox = async () => {
 			await Promise.all(entrypoints.map(({ path, filters }) => {
 				return buildIndex(path, filters, { exclusionJSDocTag });
 			}));
+		},
+		copy: async (profile: string) => {
+			const cfg = config?.copy?.[profile];
+			cfg && await copy(cfg);
 		},
 	};
 };

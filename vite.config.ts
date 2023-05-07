@@ -4,5 +4,7 @@ import { libConfig } from './src/vite/vite-lib-config.js';
 
 
 export default defineConfig(async () => {
-	return { ...await libConfig() };
+	return {
+		...await libConfig(),
+	};
 });
