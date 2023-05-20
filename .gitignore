@@ -5,7 +5,6 @@
 #deployment folders
 _deploy-*
 
-
 # Logs
 logs
 *.log
