@@ -7,7 +7,10 @@
 		"type": "git",
 		"url": "git+https://github.com/RoenLie/package-toolbox.git"
 	},
-	"author": "Kristoffer Roen-Lie",
+	"author": {
+		"name": "Kristoffer Roen-Lie",
+		"email": "KristofferRoenLie@gmail.com"
+	},
 	"bugs": {
 		"url": "https://github.com/RoenLie/package-toolbox/issues"
 	},
@@ -46,6 +49,7 @@
 		"build:prepare": "rimraf dist",
 		"build:index": "node ./bin/index.js build-indexes",
 		"build:types": "tsc --project ./src/tsconfig.json",
+		"build:exports": "node ./bin/index.js build-exports",
 		"update:deps": "pnpm update --latest --interactive",
 		"increment-version": "node ./bin/index.js increment-version"
 	},
