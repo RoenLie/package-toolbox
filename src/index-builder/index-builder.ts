@@ -1,11 +1,10 @@
 import fs from 'node:fs';
 import { parse, resolve } from 'node:path';
 
-import { parse as swcParse } from '@swc/core';
+import ts from 'typescript';
 
 import { getFiles } from '../filesystem/get-files.js';
 import { genToArray } from '../utils/gen-to-array.js';
-import { iterate } from '../utils/iterator.js';
 
 
 /**
@@ -39,82 +38,24 @@ export const indexBuilder = async (
 	/* Extract exports from the files through ast parsing. */
 	const exports = await Promise.all(filePaths.map(async ({ rawPath, path }) => {
 		const content: string = await fs.promises.readFile(rawPath, { encoding: 'utf8' });
-		const ast = await swcParse(
-			content, { syntax: 'typescript', decorators: true, comments: true, target: 'es2022' },
+		const fileName = path.split('/').at(-1) ?? path;
+
+		const symbols = new Set<string>();
+		const types = new Set<string>();
+
+		const sourceFile = ts.createSourceFile(
+			fileName,
+			content,
+			{ languageVersion: ts.ScriptTarget.ES2022 },
+			true,
+			ts.ScriptKind.TS,
 		);
-
-		const symbolTypes = [ 'ClassDeclaration',       'FunctionDeclaration',    'VariableDeclaration' ];
-		const typeTypes   = [ 'TsTypeAliasDeclaration', 'TsInterfaceDeclaration', 'TsModuleDeclaration' ];
-
-		const symbolExports = new Set<string>();
-		const typeExports = new Set<string>();
-
-		const exportTokenMap = new Map(tokenizeExports(content).map(exp => [ exp.name, exp.jsdoc ]));
-
-		iterate(ast.body)
-			.pipe(item => {
-				if (item.type !== 'ExportDeclaration')
-					return;
-
-				if (symbolTypes.includes(item.declaration.type)) {
-					return {
-						type:        'symbol' as const,
-						declaration: item.declaration,
-					};
-				}
-
-				if (typeTypes.includes(item.declaration.type)) {
-					return {
-						type:        'type' as const,
-						declaration: item.declaration,
-					};
-				}
-			})
-			.pipe(({ type, declaration }) => {
-				if (type === 'symbol') {
-					const newValue = { type: 'symbol' as const, value: '' };
-
-					switch (declaration.type) {
-					case 'ClassDeclaration':
-					case 'FunctionDeclaration': {
-						newValue.value = declaration.identifier.value;
-						break;
-					}
-					case 'VariableDeclaration': {
-						const varDeclarations = declaration.declarations.map(dec => {
-							if (dec.id.type === 'Identifier')
-								return dec.id.value;
-						}).filter(Boolean).join(',');
-
-						newValue.value = varDeclarations;
-						break;
-					}
-					}
-
-					if (!exportTokenMap.get(newValue.value)?.includes(exclusionJSDocTag))
-						symbolExports.add(newValue.value);
-				}
-
-				if (type === 'type') {
-					const newValue = { type: 'type' as const, value: '' };
-
-					switch (declaration.type) {
-					case 'TsTypeAliasDeclaration':
-					case 'TsInterfaceDeclaration':
-					case 'TsModuleDeclaration':
-						newValue.value = declaration.id.value;
-					}
-
-					if (!exportTokenMap.get(newValue.value)?.includes(exclusionJSDocTag))
-						typeExports.add(newValue.value);
-				}
-			})
-			.toArray();
+		nodeTraverser(sourceFile, sourceFile, exclusionJSDocTag, symbols, types);
 
 		return {
 			path,
-			symbols: [ ...symbolExports ],
-			types:   [ ...typeExports ],
+			symbols: Array.from(symbols),
+			types:   Array.from(types),
 		};
 	}));
 
@@ -176,28 +117,62 @@ export const indexBuilder = async (
 };
 
 
-interface ExportToken {
-	name: string;
-	jsdoc: string;
-}
+const nodeTraverser = (
+	source: ts.SourceFile,
+	node: ts.Node,
+	exclusionTag: string,
+	symbols = new Set<string>(),
+	types = new Set<string>(),
+) => {
+	if (node.kind === ts.SyntaxKind.ExportKeyword) {
+		// Retrieve the closest comment range to the export.
+		const commentRange = ts.getLeadingCommentRanges(
+			source.getFullText(),
+			node.pos,
+		)?.at(-1);
 
+		const commentText = commentRange ? source
+			.getFullText()
+			.substring(commentRange.pos, commentRange.end)
+			.trim() : '';
 
-/** @internalexport */
-export const tokenizeExports = (content: string): ExportToken[] => {
-	const exportTokens: ExportToken[] = [];
-	const exportRegex = /(?:\/\*\*(?:\s|\S)*?\*\/\s*)?export\s+(?:\w+\s+)?([\w*]+)?\s+(\w+)/g;
+		const parent = node.parent;
+		if (ts.isClassDeclaration(parent)) {
+			const name = parent.name?.getText() ?? '';
+			if (!commentText.includes(exclusionTag))
+				symbols.add(name);
+		}
+		else if (ts.isFunctionDeclaration(parent)) {
+			const name = parent.name?.getText() ?? '';
+			if (!commentText.includes(exclusionTag))
+				symbols.add(name);
+		}
+		else if (ts.isVariableStatement(parent)) {
+			parent.declarationList.forEachChild(variableDeclaration => {
+				if (ts.isVariableDeclaration(variableDeclaration)) {
+					const name = variableDeclaration.name.getText() ?? '';
+					if (!commentText.includes(exclusionTag))
+						symbols.add(name);
+				}
+			});
+		}
+		else if (ts.isInterfaceDeclaration(parent)) {
+			const name = parent.name.getText();
+			if (!commentText.includes(exclusionTag))
+				types.add(name);
+		}
+		else if (ts.isTypeAliasDeclaration(parent)) {
+			const name = parent.name.getText();
+			if (!commentText.includes(exclusionTag))
+				types.add(name);
+		}
+		else if (ts.isModuleDeclaration(parent)) {
+			const name = parent.name.getText();
+			if (!commentText.includes(exclusionTag))
+				types.add(name);
+		}
+		else { /*  */ }
+	}
 
-	const matches = [ ...content.matchAll(exportRegex) ];
-	matches.forEach(([ comment, , name ]) => {
-		const jsdocComment = comment.startsWith('/**')
-			? comment.split('*/')[0] + '*/'
-			: '';
-
-		exportTokens.push({
-			name:  name ?? '',
-			jsdoc: jsdocComment,
-		});
-	});
-
-	return exportTokens;
+	ts.forEachChild(node, (n)=> nodeTraverser(source, n, exclusionTag, symbols, types));
 };
