@@ -1,6 +1,6 @@
 {
 	"name": "@roenlie/package-toolbox",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"description": "Utilities for typescript/javascript packages",
 	"license": "MIT",
 	"repository": {
