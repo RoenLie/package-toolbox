@@ -14,7 +14,9 @@ export default defineToolbox(async () => {
 			],
 			defaultFilters:             [ exclude ],
 			defaultPackageExport:       true,
-			packageExportNameTransform: (path) => path.replace('./src', './dist'),
+			packageExportNameTransform: (path) => path
+				.replace('./src', './dist')
+				.replace('.ts', '.js'),
 		},
 		incrementPackage: {
 			registry: 'npmjs',

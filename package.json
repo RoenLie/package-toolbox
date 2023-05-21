@@ -26,15 +26,15 @@
 		},
 		"./filesystem": {
 			"types": "./dist/filesystem/index.d.ts",
-			"default": "./dist/filesystem/index.ts"
+			"default": "./dist/filesystem/index.js"
 		},
 		"./toolbox": {
 			"types": "./dist/toolbox/index.d.ts",
-			"default": "./dist/toolbox/index.ts"
+			"default": "./dist/toolbox/index.js"
 		},
 		"./vite": {
 			"types": "./dist/vite/index.d.ts",
-			"default": "./dist/vite/index.ts"
+			"default": "./dist/vite/index.js"
 		}
 	},
 	"files": [
