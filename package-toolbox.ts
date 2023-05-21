@@ -1,4 +1,4 @@
-import { defineToolbox } from '@roenlie/package-toolbox/toolbox';
+import { defineToolbox } from './src/toolbox/define-toolbox.js';
 
 
 export default defineToolbox(async () => {
@@ -8,21 +8,13 @@ export default defineToolbox(async () => {
 	return {
 		indexBuilder: {
 			entrypoints: [
-				{ path: './src/filesystem/index.ts',        filters: [ exclude ] },
-				{ path: './src/toolbox/index.ts',           filters: [ exclude ] },
-				{ path: './src/vite/index.ts',              filters: [ exclude ] },
+				{ path: './src/filesystem/index.ts', packagePath: './filesystem' },
+				{ path: './src/toolbox/index.ts',    packagePath: './toolbox' },
+				{ path: './src/vite/index.ts',       packagePath: './vite' },
 			],
-		},
-		exportsBuilder: {
-			entries: [
-				{ path: '.',            default: './dist/lib/index.js' },
-				{ path: './filesystem', default: './dist/filesystem/index.js' },
-				{ path: './toolbox',    default: './dist/toolbox/index.js' },
-				{ path: './vite',       default: './dist/vite/index.js' },
-			],
-			options: {
-				override: true,
-			},
+			defaultFilters:             [ exclude ],
+			defaultPackageExport:       true,
+			packageExportNameTransform: (path) => path.replace('./src', './dist'),
 		},
 		incrementPackage: {
 			registry: 'npmjs',

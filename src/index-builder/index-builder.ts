@@ -1,9 +1,10 @@
-import { parse as swcParse } from '@swc/core';
-import fs from 'fs';
-import { parse, resolve } from 'path';
+import fs from 'node:fs';
+import { parse, resolve } from 'node:path';
 
-import { genToArray } from '../utils/gen-to-array.js';
+import { parse as swcParse } from '@swc/core';
+
 import { getFiles } from '../filesystem/get-files.js';
+import { genToArray } from '../utils/gen-to-array.js';
 import { iterate } from '../utils/iterator.js';
 
 

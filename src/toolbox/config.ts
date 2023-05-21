@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 
 import { ToolboxConfig } from './define-toolbox.js';
+import { exec } from './process.js';
 
 
 export const buildConfigFile = async (fileName: string) => {
@@ -52,5 +53,29 @@ export const loadConfigFromBundledFile = async (
 	}
 	finally {
 		fs.unlink(fileNameTmp, () => {}); // Ignore errors
+	}
+};
+
+
+export const loadConfigWithTsup = async (filePath: string) => {
+	const toolboxFileName = './package-toolbox.ts';
+	await exec(`npx tsup ${ toolboxFileName } --out-dir ./  --format esm --no-splitting`);
+
+	const fileBase = `${ filePath }.timestamp-${ Date.now() }-${ Math.random()
+		.toString(16)
+		.slice(2) }`;
+
+	const fileNameTmp = `${ fileBase }.js`;
+	const fileUrl = `${ pathToFileURL(fileBase) }.js`;
+
+	await fsp.rename(filePath, fileNameTmp);
+
+	const imp: () => Promise<ToolboxConfig> = await import(fileUrl).then(m => m.default);
+
+	try {
+		return await imp();
+	}
+	finally {
+		fsp.unlink(fileNameTmp);
 	}
 };

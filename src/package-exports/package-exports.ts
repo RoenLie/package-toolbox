@@ -25,14 +25,8 @@ export const createPackageExports = async (
 	for (const entry of entries) {
 		const target = exports[entry.path] ??= {};
 
-		if (!entry.types) {
-			const split = (entry.import ?? entry.default).split('/');
-			const filesplit = split.at(-1)!.split('.');
-			filesplit[filesplit.length - 1] = 'd.ts';
-			split[split.length - 1] = filesplit.join('.');
-
-			entry.types = split.join('/');
-		}
+		if (!entry.types)
+			entry.types = createTypePath(entry.import ?? entry.default);
 
 		target['types'] = entry.types ?? '';
 		target['default'] = entry.default;
@@ -45,4 +39,14 @@ export const createPackageExports = async (
 	const stringified = JSON.stringify(parsedPackage, null, '\t');
 
 	writeFileSync('./package.json', stringified);
+};
+
+
+export const createTypePath = (path: string) => {
+	const split = path.split('/');
+	const filesplit = split.at(-1)!.split('.');
+	filesplit[filesplit.length - 1] = 'd.ts';
+	split[split.length - 1] = filesplit.join('.');
+
+	return split.join('/');
 };

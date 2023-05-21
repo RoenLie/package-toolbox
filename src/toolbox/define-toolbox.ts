@@ -1,8 +1,8 @@
 import { copy, CopyOptions } from '../filesystem/copy-files.js';
 import { incrementPackageVersion } from '../increment-package/increment-package-version.js';
 import { indexBuilder as buildIndex } from '../index-builder/index-builder.js';
-import { createPackageExports } from '../package-exports/package-exports.js';
-import { buildConfigFile, loadConfigFromBundledFile } from './config.js';
+import { createPackageExports, createTypePath, ExportEntry  } from '../package-exports/package-exports.js';
+import { loadConfigWithTsup } from './config.js';
 
 
 export type ToolboxConfig = {
@@ -12,9 +12,14 @@ export type ToolboxConfig = {
 	indexBuilder?: {
 		entrypoints: {
 			path: string;
-			filters: ((path: string) => boolean)[]
+			filters?: ((path: string) => boolean)[];
+			packagePath?: string;
+			packageExport?: boolean;
 		}[];
+		defaultFilters?: ((path: string) => boolean)[];
 		exclusionJSDocTag?: string;
+		defaultPackageExport?: boolean;
+		packageExportNameTransform?: (path: string) => string;
 	};
 	exportsBuilder?: {
 		entries: Parameters<typeof createPackageExports>['0'],
@@ -30,15 +35,8 @@ export const defineToolbox = async (
 
 
 export const toolbox = async () => {
-	const fileName = './package-toolbox.js';
-
-	const output = await buildConfigFile(fileName);
-	const mod = await loadConfigFromBundledFile(
-		fileName,
-		output.code,
-	);
-
-	const config = await mod.default();
+	const filePath = './package-toolbox.js';
+	const config = await loadConfigWithTsup(filePath);
 
 	return {
 		incrementPackage: async () => {
@@ -48,11 +46,45 @@ export const toolbox = async () => {
 			if (!config.indexBuilder)
 				throw ('No index builder config supplied.');
 
-			const { entrypoints, exclusionJSDocTag } = config.indexBuilder;
+			const {
+				entrypoints,
+				exclusionJSDocTag,
+				defaultFilters = [],
+				defaultPackageExport = false,
+				packageExportNameTransform = (path) => path.replace('./src', './dist'),
+			} = config.indexBuilder;
 
-			await Promise.all(entrypoints.map(({ path, filters }) => {
-				return buildIndex(path, filters, { exclusionJSDocTag });
+			const packageExports: { path: string; default: string; }[] = [];
+
+			await Promise.all(entrypoints.map((entrypoint) => {
+				const { path, filters, packageExport, packagePath } = entrypoint;
+
+				if (packagePath) {
+					const exprt = {
+						path:    packagePath,
+						default: packageExportNameTransform(path),
+					};
+
+					if (packageExport !== undefined && packageExport)
+						packageExports.push(exprt);
+					else if (defaultPackageExport)
+						packageExports.push(exprt);
+				}
+
+				return buildIndex(
+					path,
+					[ ...defaultFilters, ...filters ?? [] ],
+					{ exclusionJSDocTag },
+				);
 			}));
+
+			const packageExportEntries = packageExports.map(entry => ({
+				path:    entry.path,
+				default: entry.default,
+				types:   createTypePath(entry.default),
+			} satisfies ExportEntry));
+
+			await createPackageExports(packageExportEntries);
 		},
 		exportsBuilder: async () => {
 			if (!config.exportsBuilder)
