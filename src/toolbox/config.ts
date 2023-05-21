@@ -23,6 +23,7 @@ export const loadConfigWithTsup = async (filePath: string) => {
 		outDir:       './',
 		splitting:    false,
 		outExtension: () => ({ js: ext }),
+		silent:       true,
 	});
 
 	const imp: () => Promise<ToolboxConfig> = await import(fileUrl).then(m => m.default);
