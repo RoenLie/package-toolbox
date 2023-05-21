@@ -28,13 +28,13 @@
 			"types": "./dist/filesystem/index.d.ts",
 			"default": "./dist/filesystem/index.js"
 		},
-		"./toolbox": {
-			"types": "./dist/toolbox/index.d.ts",
-			"default": "./dist/toolbox/index.js"
-		},
 		"./vite": {
 			"types": "./dist/vite/index.d.ts",
 			"default": "./dist/vite/index.js"
+		},
+		"./toolbox": {
+			"types": "./dist/toolbox/define-toolbox.d.ts",
+			"default": "./dist/toolbox/define-toolbox.js"
 		}
 	},
 	"files": [
@@ -45,7 +45,7 @@
 		"README.md"
 	],
 	"scripts": {
-		"build": "npm run build:prepare && vite build && pnpm build:index && vite build && pnpm build:types",
+		"build": "npm run build:prepare && vite build && pnpm build:index && pnpm build:exports && vite build && pnpm build:types",
 		"build:prepare": "rimraf dist",
 		"build:index": "node ./bin/index.js build-indexes",
 		"build:types": "tsc --project ./src/tsconfig.json",

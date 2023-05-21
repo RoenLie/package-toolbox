@@ -2,7 +2,7 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { toolbox } from '../dist/toolbox/define-toolbox.js';
+import { toolbox } from '../dist/toolbox/toolbox.js';
 
 
 const cmds = await toolbox();
