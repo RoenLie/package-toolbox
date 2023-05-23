@@ -1,10 +1,11 @@
-import { readdirSync } from 'node:fs';
+import { readdirSync, statSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
 
 
 export const createEntrypointsFromDirectories = (
 	directories: string[],
-	filters: ((path: string) => boolean)[] = [],
+	entryFilters: ((path: string) => boolean)[] = [],
+	exclude: ((path: string) => boolean)[] = [],
 ) => {
 	type Entrypoint = {
 		path: string;
@@ -21,9 +22,16 @@ export const createEntrypointsFromDirectories = (
 		const dirs = readdirSync(folderPath);
 
 		dirs.forEach(dir => {
-			const path = '.' + join(folderPath, dir)
+			const initialPath = join(folderPath, dir);
+			if (!statSync(initialPath).isDirectory())
+				return;
+
+			const path = '.' + initialPath
 				.replace(resolve(), '')
 				.replaceAll(sep, '/') + '/' + 'index.ts';
+
+			if (exclude.some(fn => fn(path)))
+				return;
 
 			const packagePath = './' + path.slice(1)
 				.replace(dirpath, '')
@@ -34,7 +42,7 @@ export const createEntrypointsFromDirectories = (
 			entrypoints.push({
 				path,
 				packagePath,
-				filters,
+				filters:       entryFilters,
 				packageExport: true,
 			});
 		});
