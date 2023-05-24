@@ -21,6 +21,10 @@
 	"type": "module",
 	"exports": {
 		"./*": "./*",
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
 		"./filesystem": {
 			"types": "./dist/filesystem/index.d.ts",
 			"default": "./dist/filesystem/index.js"

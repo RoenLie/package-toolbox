@@ -158,13 +158,21 @@ const nodeTraverser = (
 		}
 		else if (ts.isInterfaceDeclaration(parent)) {
 			const name = parent.name.getText();
-			if (!commentText.includes(exclusionTag))
-				types.add(name);
+
+			const parentsParent = parent.parent;
+			if (parentsParent.kind === 308) {
+				if (!commentText.includes(exclusionTag))
+					types.add(name);
+			}
 		}
 		else if (ts.isTypeAliasDeclaration(parent)) {
 			const name = parent.name.getText();
-			if (!commentText.includes(exclusionTag))
-				types.add(name);
+
+			const parentsParent = parent.parent;
+			if (parentsParent.kind === 308) {
+				if (!commentText.includes(exclusionTag))
+					types.add(name);
+			}
 		}
 		else if (ts.isModuleDeclaration(parent)) {
 			const name = parent.name.getText();
