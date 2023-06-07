@@ -169,7 +169,7 @@ const nodeTraverser = (
 			const name = parent.name.getText();
 
 			const parentsParent = parent.parent;
-			if (parentsParent.kind === 308) {
+			if (parentsParent.kind === 311) {
 				if (!commentText.includes(exclusionTag))
 					types.add(name);
 			}
