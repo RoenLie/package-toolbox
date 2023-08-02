@@ -1,15 +1,31 @@
+import { deepmerge } from 'deepmerge-ts';
 import { globby } from 'globby';
 import { resolve } from 'path';
-import { type UserConfigExport } from 'vite';
+import { type UserConfig } from 'vite';
 
 import { getExternalImportPaths } from '../filesystem/get-import-paths.js';
 
 
-export const libConfig: () => Promise<UserConfigExport> = async () => {
-	/* find all external dependency paths used. */
-	const externalImportPaths = await getExternalImportPaths('./src');
+type _inferred = Parameters<typeof getExternalImportPaths>;
+export type ExtImportOptions = {
+	from: _inferred['0'],
+	options?: _inferred['1']
+};
 
-	return {
+
+export const libConfig = async (
+	customConfig?: UserConfig,
+	options?: {
+		externalImport: ExtImportOptions;
+	},
+) => {
+	/* find all external dependency paths used. */
+	const externalImportPaths = await getExternalImportPaths(
+		options?.externalImport?.from ?? './src',
+		options?.externalImport?.options,
+	);
+
+	const cfg: UserConfig = {
 		/** Do not include the public directory in the package output. */
 		publicDir: false,
 
@@ -53,4 +69,7 @@ export const libConfig: () => Promise<UserConfigExport> = async () => {
 			},
 		},
 	};
+
+
+	return deepmerge(cfg, customConfig ?? {}) as UserConfig;
 };
