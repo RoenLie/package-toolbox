@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 
+
 export type ExportEntry = {
 	path: string;
 	default: string;
@@ -7,7 +8,7 @@ export type ExportEntry = {
 	import?: string;
 	node?: string;
 	require?: string;
-}
+};
 
 
 export const createPackageExports = async (
@@ -19,20 +20,24 @@ export const createPackageExports = async (
 	const packageJson = readFileSync('./package.json', { encoding: 'utf8' });
 	const parsedPackage = JSON.parse(packageJson);
 
-	const exports: Record<string, Partial<ExportEntry>> = options?.override
+	const exports: Record<string, Partial<ExportEntry> | string> = options?.override
 		? {} : (parsedPackage['exports'] ?? {});
 
 	for (const entry of entries) {
-		const target = exports[entry.path] ??= {};
+		if (entry.path.endsWith('/*')) {
+			exports[entry.path] = entry.default;
+		}
+		else {
+			const target = (exports[entry.path] ??= {}) as ExportEntry;
+			if (!entry.types)
+				entry.types = createTypePath(entry.import ?? entry.default);
 
-		if (!entry.types)
-			entry.types = createTypePath(entry.import ?? entry.default);
-
-		target['types'] = entry.types ?? '';
-		target['default'] = entry.default;
-		entry.node && (target['node'] = entry.node);
-		entry.import && (target['import'] = entry.import);
-		entry.require && (target['require'] = entry.require);
+			target['types'] = entry.types ?? '';
+			target['default'] = entry.default;
+			entry.node && (target['node'] = entry.node);
+			entry.import && (target['import'] = entry.import);
+			entry.require && (target['require'] = entry.require);
+		}
 	}
 
 	parsedPackage['exports'] = exports;

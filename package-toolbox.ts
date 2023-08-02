@@ -1,4 +1,4 @@
-import { defineToolbox } from './src/toolbox/define-toolbox.js';
+import { defineToolbox } from './dist/toolbox/define-toolbox.js';
 
 
 export default defineToolbox(async () => {
@@ -8,8 +8,11 @@ export default defineToolbox(async () => {
 	return {
 		indexBuilder: {
 			entrypoints: [
-				{ path: './src/filesystem/index.ts', packagePath: './filesystem' },
-				{ path: './src/vite/index.ts',       packagePath: './vite' },
+				{
+					path:            './src/vite/index.ts',
+					packagePath:     './vite',
+					includeWildcard: true,
+				},
 			],
 			defaultFilters:             [ exclude ],
 			defaultPackageExport:       true,
@@ -25,6 +28,11 @@ export default defineToolbox(async () => {
 				{
 					path:    './toolbox',
 					default: './dist/toolbox/define-toolbox.js',
+				},
+				{
+					path:     './filesystem/*',
+					default:  './dist/filesystem/*',
+					wildcard: true,
 				},
 			],
 		},

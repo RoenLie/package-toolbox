@@ -1,6 +1,6 @@
 import { globby } from 'globby';
 import { resolve } from 'path';
-import { UserConfigExport } from 'vite';
+import { type UserConfigExport } from 'vite';
 
 import { getExternalImportPaths } from '../filesystem/get-import-paths.js';
 

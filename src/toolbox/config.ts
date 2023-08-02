@@ -1,7 +1,9 @@
 import fsp from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
-import { ToolboxConfig } from './define-toolbox.js';
+import { build } from 'tsup';
+
+import { type ToolboxConfig } from './define-toolbox.js';
 
 
 export const loadConfigWithTsup = async (filePath: string) => {
@@ -15,8 +17,6 @@ export const loadConfigWithTsup = async (filePath: string) => {
 
 	const pathIn = './package-toolbox.ts';
 
-	const { build } = await import('tsup');
-
 	await build({
 		entry:        { [fileNameTmp]: pathIn },
 		format:       'esm',
@@ -24,6 +24,7 @@ export const loadConfigWithTsup = async (filePath: string) => {
 		splitting:    false,
 		outExtension: () => ({ js: ext }),
 		silent:       true,
+		treeshake:    true,
 	});
 
 	const imp: () => Promise<ToolboxConfig> = await import(fileUrl).then(m => m.default);

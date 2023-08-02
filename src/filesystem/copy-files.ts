@@ -3,7 +3,7 @@ import util from 'node:util';
 
 import { bold, green, yellow } from 'colorette';
 import fs, { type CopyOptions as FSCopyOptions, type WriteFileOptions } from 'fs-extra';
-import { globby, Options } from 'globby';
+import { globby, type Options } from 'globby';
 
 import { areDatesEqual } from '../utils/compare-dates.js';
 import { isObject } from '../utils/is-object.js';

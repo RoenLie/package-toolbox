@@ -1,18 +1,18 @@
 import { copy } from '../filesystem/copy-files.js';
 import { incrementPackageVersion } from '../increment-package/increment-package-version.js';
 import { indexBuilder as buildIndex } from '../index-builder/index-builder.js';
-import { createPackageExports, createTypePath, ExportEntry } from '../package-exports/package-exports.js';
+import { createPackageExports, createTypePath } from '../package-exports/package-exports.js';
 import { loadConfigWithTsup } from './config.js';
 
 
-export const toolbox = async () => {
-	const filePath = './package-toolbox.js';
+export const toolbox = async (filePath = './package-toolbox.js') => {
 	const config = await loadConfigWithTsup(filePath);
 
 	return {
 		incrementPackage: async () => {
 			await incrementPackageVersion();
 		},
+
 		indexBuilder: async () => {
 			if (!config.indexBuilder)
 				throw ('No index builder config supplied.');
@@ -25,18 +25,30 @@ export const toolbox = async () => {
 				packageExportNameTransform = (path) => path.replace('./src', './dist'),
 			} = config.indexBuilder;
 
-			const packageExports: { path: string; default: string; }[] = [];
+			const wildExportTransform = (path: string) => packageExportNameTransform(path)
+				.replace(/index\..+$/, '*');
+
+			const packageExports: { path: string; default: string; type?: string }[] = [];
 
 			await Promise.all(entrypoints.map((entrypoint) => {
-				const { path, filters, packageExport, packagePath } = entrypoint;
+				const { path, filters, packageExport, packagePath, includeWildcard } = entrypoint;
 
 				if (packagePath) {
+					if (includeWildcard) {
+						packageExports.push({
+							path:    packagePath + '/*',
+							default: wildExportTransform(path),
+						});
+					}
+
+					const defPath = packageExportNameTransform(path);
 					const exprt = {
 						path:    packagePath,
-						default: packageExportNameTransform(path),
+						default: defPath,
+						type:    createTypePath(defPath),
 					};
 
-					if (packageExport !== undefined && packageExport)
+					if (packageExport)
 						packageExports.push(exprt);
 					else if (defaultPackageExport)
 						packageExports.push(exprt);
@@ -49,14 +61,9 @@ export const toolbox = async () => {
 				);
 			}));
 
-			const packageExportEntries = packageExports.map(entry => ({
-				path:    entry.path,
-				default: entry.default,
-				types:   createTypePath(entry.default),
-			} satisfies ExportEntry));
-
-			await createPackageExports(packageExportEntries);
+			await createPackageExports(packageExports);
 		},
+
 		exportsBuilder: async () => {
 			if (!config.exportsBuilder)
 				throw ('No exports builder config supplied.');
@@ -66,6 +73,7 @@ export const toolbox = async () => {
 				config.exportsBuilder.options,
 			);
 		},
+
 		copy: async (profile: string) => {
 			const cfg = config?.copy?.[profile];
 			cfg && await copy(cfg);

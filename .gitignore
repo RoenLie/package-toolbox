@@ -1,5 +1,5 @@
 # Custom ignores
-**/*/src/**/*/index.ts
+index.ts
 
 
 #deployment folders

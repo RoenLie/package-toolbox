@@ -12,6 +12,7 @@ export type ToolboxConfig = {
 			filters?: ((path: string) => boolean)[];
 			packagePath?: string;
 			packageExport?: boolean;
+			includeWildcard?: boolean;
 		}[];
 		defaultFilters?: ((path: string) => boolean)[];
 		exclusionJSDocTag?: string;

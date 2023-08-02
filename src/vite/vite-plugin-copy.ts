@@ -1,6 +1,6 @@
-import { Plugin } from 'vite';
+import { type Plugin } from 'vite';
 
-import { copy, CopyOptions } from '../filesystem/copy-files.js';
+import { copy, type CopyOptions } from '../filesystem/copy-files.js';
 
 
 interface ViteCopyOptions extends CopyOptions {
