@@ -1,6 +1,5 @@
 import { deepmerge } from 'deepmerge-ts';
 import { globby } from 'globby';
-import { resolve } from 'path';
 import { type UserConfig } from 'vite';
 
 import { getExternalImportPaths } from '../filesystem/get-import-paths.js';
@@ -29,6 +28,14 @@ export const libConfig = async (
 		/** Do not include the public directory in the package output. */
 		publicDir: false,
 
+		esbuild: {
+			tsconfigRaw: {
+				compilerOptions: {
+					experimentalDecorators: true,
+				},
+			},
+		},
+
 		build: {
 			outDir: 'dist',
 
@@ -41,14 +48,12 @@ export const libConfig = async (
 			 * Removes the requirement of a index.html file, instead starts at the entrypoint given in the options.
 			 */
 			lib: {
-				entry:   resolve('./src/index.ts'),
+				/** We add all files as entrypoints */
+				entry:   (await globby('./src/**/!(*.(test|demo|types)).ts')),
 				formats: [ 'es' ],
 			},
 
 			rollupOptions: {
-				/** We add all files as entrypoints */
-				input: (await globby('./src/**/!(*.(test|demo|types)).ts')),
-
 				/** By default, we externalize all dependencies.
 				 *  There might be a few exceptions to this, with packages that make externalization difficult, or for other reasons. */
 				external: externalImportPaths,
@@ -61,10 +66,6 @@ export const libConfig = async (
 					/** We remove src from any module paths to preserve the folder structure incase any virtual or node_modules
 					 *  files are included */
 					preserveModulesRoot: 'src',
-
-					/** We rename the file path to the file name and .js
-					 *  If we don't do this, in combination with preserve modules, we end up with double file paths. */
-					entryFileNames: (entry) => `${ entry.name }.js`,
 				},
 			},
 		},
