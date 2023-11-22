@@ -4,7 +4,7 @@ import { type Plugin, type ResolvedConfig } from 'vite';
 import { createTagCache, getUsedTags } from '../filesystem/create-tag-cache.js';
 
 
-export type AutoImportPluginProps = {
+export interface AutoImportPluginProps {
 	directories: { path: string, whitelist?: RegExp[]; blacklist?: RegExp[]; }[];
 	prefixes: RegExp[];
 	loadWhitelist: RegExp[];
@@ -12,7 +12,7 @@ export type AutoImportPluginProps = {
 	cache?: Map<string, string>;
 }
 
-export type AutoImportLoadProps = {
+export interface AutoImportLoadProps {
 	id: string;
 	config: ResolvedConfig;
 	cache: Map<string, string>;

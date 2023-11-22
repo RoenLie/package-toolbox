@@ -7,7 +7,7 @@ import { getExternalImportPaths } from '../filesystem/get-import-paths.js';
 
 
 type _inferred = Parameters<typeof getExternalImportPaths>;
-export type ExtImportOptions = {
+export interface ExtImportOptions {
 	from: _inferred['0'],
 	options?: _inferred['1']
 };
@@ -35,6 +35,8 @@ export const libConfig = async (
 			/** Don't empty the out dir, as we create our types first. */
 			emptyOutDir: false,
 
+			sourcemap: true,
+
 			/** Indicates that this is a library build.
 			 * Removes the requirement of a index.html file, instead starts at the entrypoint given in the options.
 			 */
@@ -52,8 +54,6 @@ export const libConfig = async (
 				external: externalImportPaths,
 
 				output: {
-					sourcemap: true,
-
 					/** By preseving modules, we retain the folder structure of the original source, thereby allowing
 					 *  generated d.ts files to be correctly picked up. */
 					preserveModules: true,

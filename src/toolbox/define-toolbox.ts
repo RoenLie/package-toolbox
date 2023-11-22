@@ -2,7 +2,7 @@ import type { CopyOptions } from '../filesystem/copy-files.js';
 import type { createPackageExports  } from '../package-exports/package-exports.js';
 
 
-export type ToolboxConfig = {
+export interface ToolboxConfig {
 	incrementPackage?: {
 		registry: 'npmjs'
 	};

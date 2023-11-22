@@ -2,17 +2,19 @@ import { readdirSync, statSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
 
 
+export interface Entrypoint {
+	path: string;
+	packagePath: string;
+	packageExport: boolean;
+	filters: ((path: string) => boolean)[];
+};
+
+
 export const createEntrypointsFromDirectories = (
 	directories: string[],
 	entryFilters: ((path: string) => boolean)[] = [],
 	exclude: ((path: string) => boolean)[] = [],
 ) => {
-	type Entrypoint = {
-		path: string;
-		packagePath: string;
-		packageExport: boolean;
-		filters: ((path: string) => boolean)[];
-	};
 	const entrypoints: Entrypoint[] = [];
 
 	const create = (

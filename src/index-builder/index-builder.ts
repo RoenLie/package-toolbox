@@ -59,13 +59,13 @@ export const indexBuilder = async (
 		};
 	}));
 
-	let lines = exports.reduce((prev, { path, symbols, types }) => {
+	const lines = exports.reduce((prev, { path, symbols, types }) => {
 		if (symbols.length) {
-			let line = `export { ${ symbols.join(', ') } } from '${ path.replace('.ts', '.js') }';`;
+			const line = `export { ${ symbols.join(', ') } } from '${ path.replace('.ts', '.js') }';`;
 			prev.push(line.replace(dirTarget.replaceAll('\\', '/'), '.'));
 		}
 		if (types.length) {
-			let line = `export type { ${ types.join(', ') } } from '${ path.replace('.ts', '.js') }';`;
+			const line = `export type { ${ types.join(', ') } } from '${ path.replace('.ts', '.js') }';`;
 			prev.push(line.replace(dirTarget.replaceAll('\\', '/'), '.'));
 		}
 

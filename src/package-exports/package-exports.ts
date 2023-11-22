@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 
 
-export type ExportEntry = {
+export interface ExportEntry {
 	path: string;
 	default: string;
 	types?: string;
