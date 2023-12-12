@@ -176,8 +176,12 @@ const nodeTraverser = (
 		}
 		else if (ts.isModuleDeclaration(parent)) {
 			const name = parent.name.getText();
-			if (!commentText.includes(exclusionTag))
-				types.add(name);
+
+			const parentsParent = parent.parent;
+			if (parentsParent.kind === ts.SyntaxKind.SourceFile) {
+				if (!commentText.includes(exclusionTag))
+					types.add(name);
+			}
 		}
 		else { /*  */ }
 	}
