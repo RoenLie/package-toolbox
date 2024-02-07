@@ -9,7 +9,7 @@ type _inferred = Parameters<typeof getExternalImportPaths>;
 export interface ExtImportOptions {
 	from: _inferred['0'],
 	options?: _inferred['1']
-};
+}
 
 
 export const libConfig = async (

@@ -8,7 +8,7 @@ export interface ExportEntry {
 	import?: string;
 	node?: string;
 	require?: string;
-};
+}
 
 
 export const createPackageExports = async (

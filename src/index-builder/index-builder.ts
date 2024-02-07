@@ -37,6 +37,9 @@ export const indexBuilder = async (
 
 	/* Extract exports from the files through ast parsing. */
 	const exports = await Promise.all(filePaths.map(async ({ rawPath, path }) => {
+		if (path.endsWith('index.ts') || path.endsWith('index.js'))
+			return { path,	symbols: [], types: [] };
+
 		const content: string = await fs.promises.readFile(rawPath, { encoding: 'utf8' });
 		const fileName = path.split('/').at(-1) ?? path;
 
@@ -46,7 +49,7 @@ export const indexBuilder = async (
 		const sourceFile = ts.createSourceFile(
 			fileName,
 			content,
-			{ languageVersion: ts.ScriptTarget.ES2022 },
+			{ languageVersion: ts.ScriptTarget.ESNext },
 			true,
 			ts.ScriptKind.TS,
 		);
@@ -117,6 +120,10 @@ export const indexBuilder = async (
 };
 
 
+const isExportKeyword = (node: ts.Node): node is ts.ExportKeyword =>
+	node.kind === ts.SyntaxKind.ExportKeyword;
+
+
 const nodeTraverser = (
 	source: ts.SourceFile,
 	node: ts.Node,
@@ -124,66 +131,91 @@ const nodeTraverser = (
 	symbols = new Set<string>(),
 	types = new Set<string>(),
 ) => {
-	if (node.kind === ts.SyntaxKind.ExportKeyword) {
-		// Retrieve the closest comment range to the export.
-		const commentRange = ts.getLeadingCommentRanges(
-			source.getFullText(),
-			node.pos,
-		)?.at(-1);
+	// handles grouped export syntax:
+	// export { tester, TesterClass1 }
+	// export type { tester, TesterClass1 }
+	if (ts.isExportDeclaration(node)) {
+		const jsDocTags = ts.getJSDocTags(node);
+		const excludeExport = jsDocTags
+			.some(tag => tag.tagName.getText() === exclusionTag.replace(/^@/, ''));
 
-		const commentText = commentRange ? source
-			.getFullText()
-			.substring(commentRange.pos, commentRange.end)
-			.trim() : '';
+		if (!excludeExport) {
+			if (node.isTypeOnly) {
+				node.exportClause?.forEachChild(clause => {
+					if (ts.isExportSpecifier(clause)) {
+						const name = clause.name?.getText();
+						if (name)
+							types.add(name);
+					}
+				});
+			}
+			else {
+				node.exportClause?.forEachChild(clause => {
+					if (ts.isExportSpecifier(clause)) {
+						const name = clause.name?.getText();
+						if (name) {
+							if (clause.isTypeOnly)
+								types.add(name);
+							else
+								symbols.add(name);
+						}
+					}
+				});
+			}
+		}
+	}
 
-		const parent = node.parent;
-		if (ts.isClassDeclaration(parent)) {
-			const name = parent.name?.getText() ?? '';
-			if (!commentText.includes(exclusionTag))
+	// Handles direct export syntax:
+	// export const x = 1;
+	// export function x() {}
+	// export class x {}
+	// export type x = string;
+	if (isExportKeyword(node)) {
+		const jsDocTags = ts.getJSDocTags(node.parent);
+		const excludeExport = jsDocTags
+			.some(tag => tag.tagName.getText() === exclusionTag.replace(/^@/, ''));
+
+		if (!excludeExport) {
+			const parent = node.parent;
+
+			if (ts.isClassDeclaration(parent)) {
+				const name = parent.name?.getText() ?? '';
 				symbols.add(name);
-		}
-		else if (ts.isFunctionDeclaration(parent)) {
-			const name = parent.name?.getText() ?? '';
-			if (!commentText.includes(exclusionTag))
+			}
+			else if (ts.isFunctionDeclaration(parent)) {
+				const name = parent.name?.getText() ?? '';
 				symbols.add(name);
-		}
-		else if (ts.isVariableStatement(parent)) {
-			parent.declarationList.forEachChild(variableDeclaration => {
-				if (ts.isVariableDeclaration(variableDeclaration)) {
-					const name = variableDeclaration.name.getText() ?? '';
-					if (!commentText.includes(exclusionTag))
+			}
+			else if (ts.isVariableStatement(parent)) {
+				parent.declarationList.forEachChild(variableDeclaration => {
+					if (ts.isVariableDeclaration(variableDeclaration)) {
+						const name = variableDeclaration.name.getText() ?? '';
 						symbols.add(name);
-				}
-			});
-		}
-		else if (ts.isInterfaceDeclaration(parent)) {
-			const name = parent.name.getText();
+					}
+				});
+			}
+			else if (ts.isInterfaceDeclaration(parent)) {
+				const name = parent.name.getText();
 
-			const parentsParent = parent.parent;
-			if (parentsParent.kind === ts.SyntaxKind.SourceFile) {
-				if (!commentText.includes(exclusionTag))
+				const parentsParent = parent.parent;
+				if (parentsParent.kind === ts.SyntaxKind.SourceFile)
+					types.add(name);
+			}
+			else if (ts.isTypeAliasDeclaration(parent)) {
+				const name = parent.name.getText();
+
+				const parentsParent = parent.parent;
+				if (parentsParent.kind === ts.SyntaxKind.SourceFile)
+					types.add(name);
+			}
+			else if (ts.isModuleDeclaration(parent)) {
+				const name = parent.name.getText();
+
+				const parentsParent = parent.parent;
+				if (parentsParent.kind === ts.SyntaxKind.SourceFile)
 					types.add(name);
 			}
 		}
-		else if (ts.isTypeAliasDeclaration(parent)) {
-			const name = parent.name.getText();
-
-			const parentsParent = parent.parent;
-			if (parentsParent.kind === ts.SyntaxKind.SourceFile) {
-				if (!commentText.includes(exclusionTag))
-					types.add(name);
-			}
-		}
-		else if (ts.isModuleDeclaration(parent)) {
-			const name = parent.name.getText();
-
-			const parentsParent = parent.parent;
-			if (parentsParent.kind === ts.SyntaxKind.SourceFile) {
-				if (!commentText.includes(exclusionTag))
-					types.add(name);
-			}
-		}
-		else { /*  */ }
 	}
 
 	ts.forEachChild(node, (n)=> nodeTraverser(source, n, exclusionTag, symbols, types));

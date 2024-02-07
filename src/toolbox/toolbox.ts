@@ -22,7 +22,7 @@ export const toolbox = async (filePath = './package-toolbox.js') => {
 				exclusionJSDocTag,
 				defaultFilters = [],
 				defaultPackageExport = false,
-				packageExportNameTransform = (path) => path.replace('./src', './dist'),
+				packageExportNameTransform = (path) => path.replace('./src', './dist').replace('.ts', '.js'),
 			} = config.indexBuilder;
 
 			const wildExportTransform = (path: string) => packageExportNameTransform(path)

@@ -7,7 +7,7 @@ export interface Entrypoint {
 	packagePath: string;
 	packageExport: boolean;
 	filters: ((path: string) => boolean)[];
-};
+}
 
 
 export const createEntrypointsFromDirectories = (

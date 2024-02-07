@@ -68,7 +68,7 @@ export const componentAutoImportLoad = (props: AutoImportLoadProps) => {
 };
 
 export const componentAutoImporter = (props: AutoImportPluginProps): Plugin => {
-	let {
+	const {
 		cache = new Map(),
 		directories,
 		prefixes,
