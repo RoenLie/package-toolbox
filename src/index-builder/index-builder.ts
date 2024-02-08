@@ -37,7 +37,7 @@ export const indexBuilder = async (
 
 	/* Extract exports from the files through ast parsing. */
 	const exports = await Promise.all(filePaths.map(async ({ rawPath, path }) => {
-		if (path.endsWith('index.ts') || path.endsWith('index.js'))
+		if (path.endsWith('/index.ts') || path.endsWith('/index.js'))
 			return { path,	symbols: [], types: [] };
 
 		const content: string = await fs.promises.readFile(rawPath, { encoding: 'utf8' });
