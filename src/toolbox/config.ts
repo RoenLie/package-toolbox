@@ -15,7 +15,7 @@ export const loadConfigWithTsup = async (filePath: string) => {
 	const fileNameTmp = `${ fileBase }`;
 	const fileUrl = `${ pathToFileURL(fileBase) }${ ext }`;
 
-	const pathIn = './package-toolbox.ts';
+	const pathIn = filePath;
 
 	await build({
 		entry:        { [fileNameTmp]: pathIn },

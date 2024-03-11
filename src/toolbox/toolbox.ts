@@ -1,11 +1,12 @@
 import { copy } from '../filesystem/copy-files.js';
 import { incrementPackageVersion } from '../increment-package/increment-package-version.js';
 import { indexBuilder as buildIndex } from '../index-builder/index-builder.js';
+import { mergeTSConfig } from '../merge-tsconfig/merge-tsconfig.js';
 import { createPackageExports, createTypePath } from '../package-exports/package-exports.js';
 import { loadConfigWithTsup } from './config.js';
 
 
-export const toolbox = async (filePath = './package-toolbox.js') => {
+export const toolbox = async (filePath = './pkg-toolbox.ts') => {
 	const config = await loadConfigWithTsup(filePath);
 
 	return {
@@ -77,6 +78,10 @@ export const toolbox = async (filePath = './package-toolbox.js') => {
 		copy: async (profile: string) => {
 			const cfg = config?.copy?.[profile];
 			cfg && await copy(cfg);
+		},
+
+		mergeTSConfig: (config: string, outFile: string) => {
+			mergeTSConfig(config, outFile);
 		},
 	};
 };

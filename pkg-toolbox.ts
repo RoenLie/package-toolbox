@@ -14,8 +14,11 @@ export default defineToolbox(async () => {
 					includeWildcard: true,
 				},
 			],
-			defaultFilters:       [ exclude ],
-			defaultPackageExport: true,
+			defaultFilters:             [ exclude ],
+			defaultPackageExport:       true,
+			packageExportNameTransform: (path) => path
+				.replace('./src', './dist')
+				.replace('.ts', '.js'),
 		},
 		incrementPackage: {
 			registry: 'npmjs',
