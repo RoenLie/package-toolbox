@@ -1,8 +1,11 @@
+import type { ReleaseType } from 'semver';
+
 import { copy } from '../filesystem/copy-files.js';
 import { incrementPackageVersion } from '../increment-package/increment-package-version.js';
 import { indexBuilder as buildIndex } from '../index-builder/index-builder.js';
 import { mergeTSConfig } from '../merge-tsconfig/merge-tsconfig.js';
-import { createPackageExports, createTypePath } from '../package-exports/package-exports.js';
+import { createPackageExports, createTypePath, type ExportEntry } from '../package-exports/package-exports.js';
+import { incrementVersion } from '../versioning/increment-version.js';
 import { loadConfigWithTsup } from './config.js';
 
 
@@ -10,10 +13,6 @@ export const toolbox = async (filePath = './pkg-toolbox.ts') => {
 	const config = await loadConfigWithTsup(filePath);
 
 	return {
-		incrementPackage: async () => {
-			await incrementPackageVersion();
-		},
-
 		indexBuilder: async () => {
 			if (!config.indexBuilder)
 				throw ('No index builder config supplied.');
@@ -23,13 +22,14 @@ export const toolbox = async (filePath = './pkg-toolbox.ts') => {
 				exclusionJSDocTag,
 				defaultFilters = [],
 				defaultPackageExport = false,
-				packageExportNameTransform = (path) => path.replace('./src', './dist').replace('.ts', '.js'),
+				packageExportNameTransform = (path) =>
+					path.replace('./src', './dist').replace('.ts', '.js'),
 			} = config.indexBuilder;
 
-			const wildExportTransform = (path: string) => packageExportNameTransform(path)
-				.replace(/index\..+$/, '*');
+			const wildExportTransform = (path: string) =>
+				packageExportNameTransform(path).replace(/index\..+$/, '*');
 
-			const packageExports: { path: string; default: string; type?: string }[] = [];
+			const packageExports: ExportEntry[] = [];
 
 			await Promise.all(entrypoints.map((entrypoint) => {
 				const { path, filters, packageExport, packagePath, includeWildcard } = entrypoint;
@@ -45,9 +45,9 @@ export const toolbox = async (filePath = './pkg-toolbox.ts') => {
 					const defPath = packageExportNameTransform(path);
 					const exprt = {
 						path:    packagePath,
-						default: defPath,
 						type:    createTypePath(defPath),
-					};
+						default: defPath,
+					} as ExportEntry;
 
 					if (packageExport)
 						packageExports.push(exprt);
@@ -82,6 +82,13 @@ export const toolbox = async (filePath = './pkg-toolbox.ts') => {
 
 		mergeTSConfig: (config: string, outFile: string) => {
 			mergeTSConfig(config, outFile);
+		},
+
+		incrementVersion: (
+			placeholder: string | undefined,
+			release: ReleaseType | undefined,
+		) => {
+			incrementVersion({ placeholder, release });
 		},
 	};
 };

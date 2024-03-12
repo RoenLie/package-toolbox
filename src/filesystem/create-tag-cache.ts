@@ -44,6 +44,7 @@ export const createTagCache = async (options: {
 	return cache;
 };
 
+
 export const getUsedTags = (
 	text: string,
 	whitelist: RegExp[],

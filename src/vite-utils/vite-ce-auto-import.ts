@@ -1,4 +1,5 @@
-import fs from 'fs';
+import fs from 'node:fs';
+
 import { type Plugin, type ResolvedConfig } from 'vite';
 
 import { createTagCache, getUsedTags } from '../filesystem/create-tag-cache.js';

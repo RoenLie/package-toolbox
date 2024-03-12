@@ -1,5 +1,4 @@
 import { writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import { basename, dirname, join, resolve } from 'node:path';
 
 import {

@@ -1,5 +1,5 @@
-import Fs from 'fs';
-import path from 'path';
+import Fs from 'node:fs';
+import path from 'node:path';
 
 
 async function genToArray<T>(generated: AsyncIterable<T>): Promise<T[]> {

@@ -30,9 +30,8 @@ export default defineToolbox(async () => {
 					default: './dist/toolbox/define-toolbox.js',
 				},
 				{
-					path:     './filesystem/*',
-					default:  './dist/filesystem/*',
-					wildcard: true,
+					path:    './filesystem/*',
+					default: './dist/filesystem/*',
 				},
 			],
 		},

@@ -30,12 +30,6 @@ jobs:
       - name: Change package version.
         run: pnpm increment-version
 
-      - uses: EndBug/add-and-commit@v9
-        with:
-          message: Increment version through github action.
-          committer_name: GitHub Actions
-          committer_email: 41898282+github-actions[bot]@users.noreply.github.com
-
       - name: Publish package.
         run: pnpm publish --access public --no-git-checks
         env:

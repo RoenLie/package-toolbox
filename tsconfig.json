@@ -4,7 +4,9 @@
 		"outDir": "./dist",
 		"rootDir": ".",
 		"baseUrl": ".",
-		"types": []
+		"types": [
+			"node"
+		]
 	},
 	"include": [
 		"**/*.ts",

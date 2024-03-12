@@ -7,7 +7,9 @@
 		"noEmit": false,
 		"emitDeclarationOnly": true,
 		"incremental": false,
-		"types": []
+		"types": [
+			"node"
+		]
 	},
 	"include": [
 		"**/*.ts",

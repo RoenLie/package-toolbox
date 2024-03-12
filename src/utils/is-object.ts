@@ -2,6 +2,7 @@ export const isObject = (obj: any) => {
 	return Object.prototype.toString.call(obj) === '[object Object]';
 };
 
+
 export const isPlainObject = (obj: any) => {
 	if (isObject(obj) === false)
 		return false;

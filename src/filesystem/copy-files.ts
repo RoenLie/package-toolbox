@@ -47,7 +47,9 @@ export interface CopyOptions extends Options, Exclude<WriteFileOptions, BufferEn
 
 const stringify = (value: any) => util.inspect(value, { breakLength: Infinity });
 
+
 const isFile = async (filePath: string) =>  (await fs.stat(filePath)).isFile();
+
 
 const renameTarget = (target: string, rename: NonNullable<Target['rename']>, src: string) => {
 	const parsedPath = path.parse(target);
@@ -56,6 +58,7 @@ const renameTarget = (target: string, rename: NonNullable<Target['rename']>, src
 		? rename
 		: rename(parsedPath.name, parsedPath.ext.replace('.', ''), src);
 };
+
 
 const generateCopyTarget = async (
 	from: string,
@@ -85,6 +88,7 @@ const generateCopyTarget = async (
 		transform,
 	};
 };
+
 
 export const copy = async (options: CopyOptions = {}) => {
 	const {
