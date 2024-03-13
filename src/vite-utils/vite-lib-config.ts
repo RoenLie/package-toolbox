@@ -38,7 +38,7 @@ export const libConfig = (
 	return async (env: ConfigEnv) => {
 		const {
 			filter,
-			expression = /^@?[\w]+[\w-/.]+$/
+			expression = /^(?!\w+:[/\\])@?[\w]+[\w\-/.:]+$/
 		} = options?.externalImport ?? {};
 		
 		const entryPatterns = options?.entry?.patterns
