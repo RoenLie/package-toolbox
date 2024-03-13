@@ -7,8 +7,8 @@ import { type ConfigEnv, type UserConfig } from 'vite';
 
 
 export type ConfigOverrides = UserConfig
-| ((env: ConfigEnv) => UserConfig)
-| ((env: ConfigEnv) => Promise<UserConfig>)
+	| ((env: ConfigEnv) => UserConfig)
+	| ((env: ConfigEnv) => Promise<UserConfig>)
 
 
 export interface ConfigOptions {
@@ -16,8 +16,17 @@ export interface ConfigOptions {
 		patterns: string[];
 	},
 	externalImport?: {
-		/** Return false to exclude the source from being externalized. */
-		filter: (source: string, importer?: string) => boolean
+		/** 
+  		 *  Return `true or false` to override default externalize logic for this path.
+  		 *  Return `undefined` to use default externalize logic for this path.
+  		 */
+		filter?: (
+			source: string,
+			importer: string | undefined,
+			isResolved: boolean
+		) => boolean | undefined;
+		/** Expression used as externalize condition if filter returns undefined. */
+		expression?: RegExp;
 	};
 }
 
@@ -27,6 +36,11 @@ export const libConfig = (
 	options?: ConfigOptions,
 ) => {
 	return async (env: ConfigEnv) => {
+		const {
+			filter,
+			expression = /^@?[\w]+[\w-/.]+$/
+		} = options?.externalImport ?? {};
+		
 		const entryPatterns = options?.entry?.patterns
 			?? [ './src/**/!(*.(test|demo|types)).ts' ];
 
@@ -64,24 +78,13 @@ export const libConfig = (
 					/** By default, we externalize all dependencies.
 					 *  a filter can be supplied that excludes certain sources from being externalized */
 					external(source, importer, isResolved) {
-						// All imports without an importer are internal.
-						if (!importer)
-							return false;
+						const filterResult = filter?.(source, importer, isResolved);
+						if (filterResult !== undefined)
+							return filterResult;
 
-						// If its already resolved, return true/false if the path exists.
-						if (isResolved)
-							return !existsSync(source);
-
-						// Exclude from externalization if filter returns false.
-						if (!(options?.externalImport?.filter?.(source, importer) ?? true))
-							return false;
-
-						const resolved = join(
-							resolve(dirname(importer), dirname(source)),
-							basename(source, '.js') + '.ts',
-						);
-
-						return !existsSync(resolved);
+						// Returns true for any import using the standard external package syntax.
+						// Returns false for any absolute or relative path.
+						return expression.test(source);
 					},
 
 					output: {
