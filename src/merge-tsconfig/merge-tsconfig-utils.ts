@@ -97,4 +97,4 @@ const getTSConfig = (path: string) => {
 export const getTSConfigFromPath = (path: string) =>
 	getTSConfig(path);
 export const getTSConfigFromModule = (module: string) =>
-	getTSConfig(import.meta.resolve(module).replace(/^file:\/+/, ''));
+	getTSConfig(import.meta.resolve(module).replace(/^file:\/\//, ''));
