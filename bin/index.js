@@ -51,9 +51,7 @@ yargs(hideBin(process.argv)).demandCommand(
 		const { config, outFile } = args;
 		if (typeof config !== 'string')
 			throw new Error('Missing config argument.');
-		if (typeof outFile !== 'string')
-			throw new Error('Missing outFile argument.');
 
-		cmds.mergeTSConfig(config, outFile);
+		cmds.mergeTSConfig(config, outFile ?? config);
 	},
 ).parse();

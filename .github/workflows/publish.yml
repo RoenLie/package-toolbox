@@ -30,6 +30,9 @@ jobs:
       - name: Change package version.
         run: pnpm increment-version
 
+      - name: Merge tsconfig.
+        run: pnpm merge-tsconfig
+
       - name: Publish package.
         run: pnpm publish --access public --no-git-checks
         env:
