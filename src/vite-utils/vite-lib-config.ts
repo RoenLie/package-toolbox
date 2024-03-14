@@ -1,14 +1,11 @@
-import { existsSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
-
 import { deepmerge } from 'deepmerge-ts';
 import { globby } from 'globby';
 import { type ConfigEnv, type UserConfig } from 'vite';
 
 
 export type ConfigOverrides = UserConfig
-	| ((env: ConfigEnv) => UserConfig)
-	| ((env: ConfigEnv) => Promise<UserConfig>)
+| ((env: ConfigEnv) => UserConfig)
+| ((env: ConfigEnv) => Promise<UserConfig>)
 
 
 export interface ConfigOptions {
@@ -16,7 +13,7 @@ export interface ConfigOptions {
 		patterns: string[];
 	},
 	externalImport?: {
-		/** 
+		/**
   		 *  Return `true or false` to override default externalize logic for this path.
   		 *  Return `undefined` to use default externalize logic for this path.
   		 */
@@ -38,9 +35,9 @@ export const libConfig = (
 	return async (env: ConfigEnv) => {
 		const {
 			filter,
-			expression = /^(?!\w+:[/\\])@?[\w]+[\w\-/.:]+$/
+			expression = /^(?!\w+:[/\\])@?[\w]+[\w\-/.:]+$/,
 		} = options?.externalImport ?? {};
-		
+
 		const entryPatterns = options?.entry?.patterns
 			?? [ './src/**/!(*.(test|demo|types)).ts' ];
 

@@ -1,7 +1,7 @@
+import { existsSync } from 'fs';
 import type { ReleaseType } from 'semver';
 
 import { copy } from '../filesystem/copy-files.js';
-import { incrementPackageVersion } from '../increment-package/increment-package-version.js';
 import { indexBuilder as buildIndex } from '../index-builder/index-builder.js';
 import { mergeTSConfig } from '../merge-tsconfig/merge-tsconfig.js';
 import { createPackageExports, createTypePath, type ExportEntry } from '../package-exports/package-exports.js';
@@ -10,6 +10,19 @@ import { loadConfigWithTsup } from './config.js';
 
 
 export const toolbox = async (filePath = './pkg-toolbox.ts') => {
+	if (!existsSync(filePath)) {
+		console.warn('No pkg-toolbox.ts file found. Only certain actions available.');
+
+		return {
+			incrementVersion: (
+				placeholder: string | undefined,
+				release: ReleaseType | undefined,
+			) => {
+				incrementVersion({ placeholder, release });
+			},
+		};
+	}
+
 	const config = await loadConfigWithTsup(filePath);
 
 	return {

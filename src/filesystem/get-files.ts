@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+import { promises } from 'node:fs';
 import path from 'node:path';
 
 
@@ -10,7 +10,7 @@ export async function* getFiles(
 	directory: string,
 	pattern?: RegExp,
 ): AsyncGenerator<string, void, string | undefined> {
-	const dirents = await fs.promises.readdir(directory, { withFileTypes: true });
+	const dirents = await promises.readdir(directory, { withFileTypes: true });
 	for (const dirent of dirents) {
 		const res = path.resolve(directory, dirent.name);
 		if (dirent.isDirectory())
